@@ -56,7 +56,7 @@ class NeoPatterns : public Adafruit_NeoPixel
     */
 
     const uint8_t CyclotronLEDs = 40;
-    const uint8_t PowerCellLEDs = 16;
+    const uint8_t PowerCellLEDs = 17;
 
     uint16_t IndexCLEDArray;
     const uint8_t   NUM_LEDS = 40;
@@ -467,6 +467,9 @@ class NeoPatterns : public Adafruit_NeoPixel
                 //Serial.println(IndexCLEDArray);
                 setPixelColor(IndexCLEDArray, DimColor(getPixelColor(IndexCLEDArray)));
                 setPixelColor(IndexCLEDArray, DimColor(getPixelColor(IndexCLEDArray)));
+                if (IndexCLEDArray == 0){  //Fix last led for slime animation
+                  setPixelColor(CyclotronLEDs-1, Color1);
+                }
               }
               else
               {
