@@ -103,7 +103,7 @@ const int GunLEDEnd = 16;
 // *** Note these constants may change if you are using different LED counts, E.g. 1 LED vs a 7 LED Neopixel Jewel *** //
 
 // Cyclotron + PowerCell LED Count
-const int NeoPixelLEDCount1 = 55;
+const int NeoPixelLEDCount1 = 56;
 
 // Vent + Wand LED Count
 const int NeoPixelLEDCount2 = 17;
@@ -473,6 +473,7 @@ void loop()
             }
             WANDLEDSTATUS = FASTWARNING;
             shouldVent = true;
+            digitalWrite (VENTING, HIGH);
           }
           // After 5 seconds start the alarm routing on the wand
           else if ((millis() - firingStateMillis) >= firingwarning)
