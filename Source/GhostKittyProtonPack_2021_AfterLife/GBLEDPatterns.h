@@ -56,7 +56,7 @@ class NeoPatterns : public Adafruit_NeoPixel
     */
 
     const uint8_t CyclotronLEDs = 40;
-    const uint8_t PowerCellLEDs = 17;
+    const uint8_t PowerCellLEDs = 17; //w.ruff use all 16 leds updated from 16 to 17
 
     uint16_t IndexCLEDArray;
     const uint8_t   NUM_LEDS = 40;
@@ -158,6 +158,7 @@ class NeoPatterns : public Adafruit_NeoPixel
           IndexCLEDArray = 0;
           if (themeMode == 4)
           {
+            /*
             if (Color1 == Wheel(255))
             {
               Color1 = Wheel(85);
@@ -166,6 +167,8 @@ class NeoPatterns : public Adafruit_NeoPixel
             {
               Color1 = Wheel(255);
             }
+            */
+            //Color1 = Wheel(200); //w.ruff - test, makes ring purple no changes
           }
           if (OnCompleteC != NULL)
           {
@@ -334,7 +337,11 @@ class NeoPatterns : public Adafruit_NeoPixel
           Color1 = Wheel(42);
           break;
         case 4:
-          Color1 = Wheel(85);
+          //Color1 = Wheel(85); //w.ruff - original Christmas color
+          Color1 = Wheel(170);
+          break;
+        case 5:          
+          Color1 = Wheel(40); //w.ruff - should be yellow (sparks)
           break;
       }
     }
@@ -373,7 +380,23 @@ class NeoPatterns : public Adafruit_NeoPixel
       {
         if (i == IndexPC)  // Scan Pixel to the right
         {
-          setPixelColor(i, Color2);
+          /*
+          if (themeMode == 4){            
+            if(i == CyclotronLEDCount){              
+              setPixelColor(i, Color(255, 0, 255)); //w.ruff - set first led as magenta
+            }
+            else{ //w.ruff - fade magenta to neon yellow
+              float multiplier = ((float)i - (float)CyclotronLEDCount) / 15;
+              float r = 255 - ((255 - 0)*multiplier);
+              float g = 0; //(105*multiplier);
+              float b = 255 - ((255 - 255)*multiplier);              
+              setPixelColor(i, Color((int)r, (int)g, (int)b));
+              //rgb(0,0,255)
+            }
+          }
+          else{*/
+            setPixelColor(i, Color2);
+          //}
         }
         else
         {
@@ -400,7 +423,22 @@ class NeoPatterns : public Adafruit_NeoPixel
 
         if (i == IndexPC)  // Scan Pixel to the right
         {
-          setPixelColor(i, Color2);
+          /*if (themeMode == 4){            
+            if(i == CyclotronLEDCount){              
+              setPixelColor(i, Color(255, 0, 255)); //w.ruff - set first led as magenta
+            }
+            else{ //w.ruff - fade magenta to neon yellow
+              float multiplier = ((float)i - (float)CyclotronLEDCount) / 15;
+              float r = 255 - ((255 - 0)*multiplier);
+              float g = 0; //(105*multiplier);
+              float b = 255 - ((255 - 255)*multiplier);              
+              setPixelColor(i, Color((int)r, (int)g, (int)b));
+              //rgb(0,0,255)
+            }
+          }
+          else{*/
+            setPixelColor(i, Color2);
+          //}
         }
         if (IndexPC == (CyclotronLEDCount + PowerCellLEDs - 1))
         {
@@ -436,7 +474,11 @@ class NeoPatterns : public Adafruit_NeoPixel
           fade(0, 129, 0, 126, 0, 0, 200, 0, CyclotronLEDCount - 1);
           break;
         case 4:
-          fade(0, 0, 0, 255, 0, 0, 200, 0, CyclotronLEDCount - 1);
+          //fade(0, 0, 0, 255, 0, 0, 200, 0, CyclotronLEDCount - 1); //w.ruff - old value
+          fade(0, 0, 0, 0, 0, 255, 200, 0, CyclotronLEDCount - 1);
+          break;
+        case 5:          
+          fade(0, 129, 0, 126, 0, 0, 200, 0, CyclotronLEDCount - 1); //w.ruff - yellow sparks color
           break;
       }
       show();
@@ -451,6 +493,9 @@ class NeoPatterns : public Adafruit_NeoPixel
       if (themeMode == 1)
       {
         circring();
+      }
+      else if (themeMode == 5){
+        circring_fe();
       }
       else
       {
@@ -467,13 +512,13 @@ class NeoPatterns : public Adafruit_NeoPixel
                 //Serial.println(IndexCLEDArray);
                 setPixelColor(IndexCLEDArray, DimColor(getPixelColor(IndexCLEDArray)));
                 setPixelColor(IndexCLEDArray, DimColor(getPixelColor(IndexCLEDArray)));
-                if (IndexCLEDArray == 0){  //Fix last led for slime animation
+                if (IndexCLEDArray == 0){//w.ruff - Fixing last led for slime animation
                   setPixelColor(CyclotronLEDs-1, Color1);
                 }
               }
               else
               {
-                setPixelColor(IndexCLEDArray, Color1);
+                setPixelColor(IndexCLEDArray, Color1);                
               }
             }
           }
@@ -483,26 +528,20 @@ class NeoPatterns : public Adafruit_NeoPixel
             {
               if (i < CyclotronLEDCount)
               {
-                if (themeMode != 4)
+                if (themeMode == 2)
                 {
-                  if (themeMode == 2)
+                  if (IndexCLEDArray != i)
                   {
-                    if (IndexCLEDArray != i)
-                    {
-                      setPixelColor(IndexCLEDArray - 1, Color1);
-                    }
-
+                    setPixelColor(IndexCLEDArray-1, Color1);
                   }
                 }
               }
             }
             if (i < CyclotronLEDCount)
             {
-              if (themeMode != 4 && themeMode != 2)
+              if (themeMode != 2) //w.ruff - BEFORE: themeMode != 4 && themeMode != 2
               {
-                {
-                  setPixelColor(i, DimColor(getPixelColor(i)));
-                }
+                setPixelColor(i, DimColor(getPixelColor(i)));           
               }
             }
           }
@@ -525,7 +564,23 @@ class NeoPatterns : public Adafruit_NeoPixel
       }
       for (uint8_t i = CyclotronLEDCount; i < CyclotronLEDCount + PowerCellLEDs; i++)
       {
-        setPixelColor(i, Color2);
+        //w.ruff - all logic for overheat
+        /*
+        if (themeMode == 4){            
+          if(i == CyclotronLEDCount){              
+            setPixelColor(i, Color(255, 0, 255)); //w.ruff - set first led as magenta
+          }
+          else{ //w.ruff - fade magenta to neon yellow
+            float multiplier = ((float)i - (float)CyclotronLEDCount) / 15;
+            float r = 255 - ((255 - 0)*multiplier);
+            float g = 0; //(105*multiplier);
+            float b = 255 - ((255 - 255)*multiplier);              
+            setPixelColor(i, Color((int)r, (int)g, (int)b));
+          }
+        }
+        else{*/
+          setPixelColor(i, Color2);
+        //}
       }
       show();
     }
@@ -619,7 +674,7 @@ class NeoPatterns : public Adafruit_NeoPixel
       return (color >> 16) & 0xFF;
     }
 
-    // Returns the Green component of a 32-bit color
+    // Returns the Green component of a 32-bit colorWheel
     uint8_t Green(uint32_t color)
     {
       return (color >> 8) & 0xFF;
@@ -770,5 +825,56 @@ class NeoPatterns : public Adafruit_NeoPixel
       for (uint8_t i = 0; i < mylen; i++) {                                                               // We can't do a fill_solid as we need to use a modulus operator to wrap around the strand.
         setPixelColor(((mytime + i) % NUM_LEDS), Color(255, 0, 0));
       }
-    } // circring()
+    }
+
+    void circring_fe()
+    {
+      for (uint8_t i = 0; i < NUM_LEDS; i++) {
+        setPixelColor(i, Color(0, 0, 0));
+      }
+
+      uint8_t mylen = 12; //"Spark tail length"
+      
+      for (uint8_t i = 0; i < mylen; i++) {
+        int temp = IndexC-i;
+        if(temp < 0){
+          temp = CyclotronLEDs + temp;
+        }
+        
+        uint32_t led_color = Wheel(30 + random(-5,15));        
+        
+        setPixelColor(temp, led_color);        
+        
+        if(i >= mylen/3 && i <= mylen/2){ //Middle of tail
+          setPixelColor(temp, DimColor(DimColor(led_color)));
+        }        
+        
+        if(i > mylen/2){ //back end of tail
+          setPixelColor(temp, DimColor(DimColor(DimColor(DimColor(DimColor(led_color))))));
+        }
+
+        if(i == mylen-1){
+          //turn off some random leds toward the end
+
+          int rand1 = temp+random(0,mylen/3);
+          int rand2 = temp+random(mylen/3,mylen/2);
+          int rand3 = temp+random(mylen/2,mylen);
+
+          if(rand1 >= CyclotronLEDCount){
+            rand1 = rand1-CyclotronLEDCount;
+          }
+          if(rand2 >= CyclotronLEDCount){
+            rand2 = rand2-CyclotronLEDCount;
+          }
+          if(rand3 >= CyclotronLEDCount){
+            rand3 = rand3-CyclotronLEDCount;
+          }
+
+          setPixelColor(rand1, Color(0,0,0));
+          setPixelColor(rand2, Color(0,0,0));
+          setPixelColor(rand3, Color(0,0,0));
+        }
+      }
+      IncrementC();
+    }
 };
