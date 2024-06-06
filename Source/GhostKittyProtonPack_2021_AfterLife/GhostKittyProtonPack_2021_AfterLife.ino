@@ -59,6 +59,7 @@ unsigned long  IdleSlimeLoop = 28;
 unsigned long  IdleMesonStart = 29;
 unsigned long  IdleMesonLoop = 30;
 unsigned long  IdleAfterlifeLoop = 35;
+unsigned long  IdleStasisLoop = 36;
 
 unsigned long  clickTrack = 8;
 unsigned long  chargeTrack = 7;
@@ -103,7 +104,7 @@ const int GunLEDEnd = 16;
 // *** Note these constants may change if you are using different LED counts, E.g. 1 LED vs a 7 LED Neopixel Jewel *** //
 
 // Cyclotron + PowerCell LED Count
-const int NeoPixelLEDCount1 = 56;
+const int NeoPixelLEDCount1 = 56; //w.ruff: Use all 16 leds (56 instead of 55)
 
 // Vent + Wand LED Count
 const int NeoPixelLEDCount2 = 17;
@@ -126,7 +127,7 @@ enum WandState WANDSTATUS;
 enum WandSLEDState { ALLOFF, WANDONLY, NORMAL, FIRING, WARNING, FASTWARNING, VENTSTATE, STREAMCROSS };
 enum WandSLEDState WANDLEDSTATUS;
 
-enum PackTheme { MOVIE, STATIS, SLIME, MESON, CHRISTMAS };
+enum PackTheme { MOVIE, STATIS, SLIME, MESON, CHRISTMAS, FE }; //Add FE mode
 enum PackTheme THEME;
 
 // ******************* inputs for switches and buttons ******************* //
@@ -169,7 +170,7 @@ unsigned long fire_intervalC = 100;
 unsigned long FireRate = 0;
 unsigned long FireRate2 = 0;
 
-unsigned long cycIdleRate[5] = {95, 5, 95, 95, 50};
+unsigned long cycIdleRate[6] = {95, 5, 95, 95, 95, 95}; //w.ruff - Add FE
 
 unsigned long firingStateMillis;
 unsigned long VentMillis;
@@ -214,7 +215,8 @@ void setup() {
   pinMode(FIRE_BUTTON2, INPUT);
   digitalWrite(FIRE_BUTTON2, HIGH);
   pinMode(VENTING, OUTPUT);
-  digitalWrite(VENTING, HIGH);
+  //digitalWrite(VENTING, HIGH);//w.ruff - turn relay off at startup
+  digitalWrite (VENTING, LOW);
   pinMode(RUMBLE, OUTPUT);
   digitalWrite(RUMBLE, LOW);
 
@@ -232,7 +234,7 @@ void setup() {
 
   // ***** Set the intial pack status to off ***** //
   STATUS = OFF;
-  THEME = MOVIE;
+  THEME = STATIS; //w.ruff - Start in Afterlife theme
   // ***** Start with LED's off ***** //
   clearLEDs();
   delay(500);
@@ -303,8 +305,13 @@ void loop()
             myDFPlayer.play(ChristmasSWTrack);
             break;
           case CHRISTMAS:
-            THEME = MOVIE;
+            THEME = FE; //w.ruff - change from MOVIE to FE
             PackLEDs.Cyclotron(PackLEDs.Color1, cycIdleRate[0], THEME);
+            myDFPlayer.play(ThemeSWTrack);
+            break;
+          case FE:
+            THEME = MOVIE;
+            PackLEDs.Cyclotron(PackLEDs.Color1, cycIdleRate[5], THEME);
             myDFPlayer.play(ThemeSWTrack);
             break;
         }
@@ -356,8 +363,11 @@ void loop()
       BarGraph.initiateVariables(ACTIVE);
       STATUS = BOOTING;
       setVentLightState(ventStart, ventEnd, 2);
+      if (THEME == STATIS){
+        PackLEDs.setBrightness(10);//w.ruff - Adjust brightness for Afterlife boot
+      }      
       PackLEDs.CyclotronBoot(PackLEDs.Wheel(255), 50, THEME);
-      PackLEDs.PowercellBoot(PackLEDs.Wheel(170), 30);
+      PackLEDs.PowercellBoot(PackLEDs.Wheel(170), 50); //w.ruff Update interval from 30 -> 50
     }
     switch (STATUS)
     {
@@ -391,7 +401,7 @@ void loop()
           //          DFPlayerStart = true;
           //          DFPTrack = IdleMovieLoop;
           //          playType = 1;
-          switch (THEME) // MOVIE, STATIS, SLIME, MESON, CHRISTMAS
+          switch (THEME) // MOVIE, STATIS, SLIME, MESON, CHRISTMAS, FE
           { 
             case MOVIE:
             myDFPlayer.loop(IdleMovieLoop);
@@ -406,7 +416,10 @@ void loop()
             myDFPlayer.loop(IdleMesonLoop);
             break;
             case CHRISTMAS:
-            myDFPlayer.loop(IdleMovieLoop);
+            myDFPlayer.loop(IdleStasisLoop);
+            break;
+            case FE:
+            myDFPlayer.loop(IdleSlimeLoop);//w.ruff - use slime for now
             break;
           }
           
@@ -473,7 +486,7 @@ void loop()
             }
             WANDLEDSTATUS = FASTWARNING;
             shouldVent = true;
-            digitalWrite (VENTING, HIGH);
+            digitalWrite (VENTING, HIGH); //w.ruff: turn relay on during fast warning
           }
           // After 5 seconds start the alarm routing on the wand
           else if ((millis() - firingStateMillis) >= firingwarning)
@@ -785,6 +798,9 @@ void WandLightState(unsigned long currentMillis)
       case CHRISTMAS: // Set the theme flashing red / green
         setWandLightState(ThemeLED, 11, currentMillis);
         break;
+      case FE: // w.ruff - flashing yellow / green
+        setWandLightState(ThemeLED, 13, currentMillis);
+        break;
     }
   }
   else
@@ -813,7 +829,7 @@ bool flashState6 = false;
 const unsigned long wandFastFlashInterval = 100; // interval at which we flash the top led on the wand
 const unsigned long wandMediumFlashInterval = 500; // interval at which we flash the top led on the wand
 
-void setWandLightState(int lednum, int state, unsigned long currentMillis) {
+void setWandLightState(int lednum, int state, unsigned long currentMillis) { //w.ruff - does something need to change in this function?
   switch ( state ) {
     case 0: // set led red
       wandLights.setPixelColor(lednum, wandLights.Color(255, 0, 0));
@@ -895,21 +911,23 @@ void setWandLightState(int lednum, int state, unsigned long currentMillis) {
       }
       break;
     case 11: // slower orange flashing
-      if ((unsigned long)(currentMillis - prevFlashMillis6) >= wandMediumFlashInterval) {
-        prevFlashMillis6 = currentMillis;
-        if ( flashState6 == false ) {
-          wandLights.setPixelColor(lednum, wandLights.Color(0, 255, 0));
-          flashState6 = true;
-        } else {
-          wandLights.setPixelColor(lednum, wandLights.Color(255, 0, 0));
-          flashState6 = false;
-        }
-      }
+      wandLights.setPixelColor(lednum, wandLights.Color(0, 0, 255));
       break;
     case 12: // set led yellow
       wandLights.setPixelColor(lednum, wandLights.Color(129, 126, 0));
       break;
-
+    case 13: // fe theme
+      if ((unsigned long)(currentMillis - prevFlashMillis6) >= wandMediumFlashInterval) {
+        prevFlashMillis6 = currentMillis;
+        if ( flashState6 == false ) {
+          wandLights.setPixelColor(lednum, wandLights.Color(26, 249, 182));          
+          flashState6 = true;
+        } else {
+          wandLights.setPixelColor(lednum, wandLights.Color(129, 126, 0));
+          flashState6 = false;
+        }
+      }
+      break;
   }
   wandLights.show();
 }
@@ -922,14 +940,19 @@ void setVentLightState(int startLed, int endLed, int state ) {
   switch ( state ) {
     case 0: // set all leds to white
       for (int i = startLed; i <= endLed; i++) {
-        wandLights.setPixelColor(i, wandLights.Color(255, 255, 255));
+        /*if (THEME == 4){ //w.ruff - Special phoenix vent color
+          wandLights.setPixelColor(i, wandLights.Color(255, 0, 255));
+        }*/
+        //else{
+          wandLights.setPixelColor(i, wandLights.Color(255, 255, 255));
+        //}        
       }
       // Set the relay to on while venting. If relay is off set the pin LOW
       digitalWrite (VENTING, HIGH);
       break;
     case 1: // set all leds to blue
       for (int i = startLed; i <= endLed; i++) {
-        wandLights.setPixelColor(i, wandLights.Color(0, 0, 255));
+        wandLights.setPixelColor(i, wandLights.Color(0, 0, 255)); //w.ruff - could clean this up...is this used for Stasis mode?  Use it if so.
       }
       // Set the relay to on while venting. If relay is off set the pin LOW
       digitalWrite (VENTING, HIGH);
@@ -938,7 +961,7 @@ void setVentLightState(int startLed, int endLed, int state ) {
       for (int i = startLed; i <= endLed; i++) {
         wandLights.setPixelColor(i, 0);
       }
-      // Set the relay to OFF while not venting. If relay is onf set the pin HIGH
+      // Set the relay to OFF while not venting. If relay is on set the pin HIGH
       digitalWrite (VENTING, LOW);
       break;
   }
@@ -1074,11 +1097,25 @@ void PlaySoundTrack(int Track) //enum WandSLEDState { ALLOFF, WANDONLY, NORMAL, 
       }
       else if (Track == FASTWARNING)
       {
-        myDFPlayer.loop(warnMovie);
+        myDFPlayer.loop(warnStasis); //w.ruff - change to warnStasis
       }
       else if (Track == NORMAL)
       {
         myDFPlayer.play(ChristmasTail);
+      }
+      break;
+    case FE:
+      if (Track == FIRING)
+      {
+        myDFPlayer.loop(FireSlime);
+      }
+      else if (Track == FASTWARNING)
+      {
+        myDFPlayer.loop(warnSlime); //w.ruff - Use slime for now...
+      }
+      else if (Track == NORMAL)
+      {
+        myDFPlayer.play(SlimeTail);
       }
       break;
   }
@@ -1122,28 +1159,28 @@ void clearGunLEDs()
 
 /*
    THEME color schemes
-   enum PackTheme { MOVIE = 0, STATIS = 1, SLIME = 2, MESON = 3, CHRISTMAS = 4 };
+   enum PackTheme { MOVIE = 0, STATIS = 1, SLIME = 2, MESON = 3, CHRISTMAS = 4, FE = 5 };
 */
+//w.ruff - Switch Christmas [4] to blue
+unsigned long ThemeGunColors1[6]  = {255, 255, 0, 255, 0, 26};
+unsigned long ThemeGunColors2[6]  = {255, 255, 255, 255, 0, 249};
+unsigned long ThemeGunColors3[6]  = {255, 255, 0, 0, 255, 182};
+//w.ruff - Switch Christmas [4] to blue
+unsigned long ThemeGunColors12[6]  = {255, 255, 0, 255, 0, 26};
+unsigned long ThemeGunColors22[6]  = {0, 0, 255, 255, 0, 249};
+unsigned long ThemeGunColors32[6]  = {0, 0, 0, 0, 255, 182};
 
-unsigned long ThemeGunColors1[5]  = {255, 255, 0, 255, 255};
-unsigned long ThemeGunColors2[5]  = {255, 255, 255, 255, 0};
-unsigned long ThemeGunColors3[5]  = {255, 255, 0, 0, 0};
+unsigned long ThemeGunColors13[6]  = {0, 0, 0, 0, 0, 255};
+unsigned long ThemeGunColors23[6]  = {0, 0, 0, 0, 0, 153};
+unsigned long ThemeGunColors33[6]  = {255, 255, 0, 0, 0, 0};
 
-unsigned long ThemeGunColors12[5]  = {255, 255, 0, 255, 0};
-unsigned long ThemeGunColors22[5]  = {0, 0, 255, 255, 255};
-unsigned long ThemeGunColors32[5]  = {0, 0, 0, 0, 0};
+unsigned long ThemeGunColors14[6]  = {255, 255, 0, 0, 0, 26};
+unsigned long ThemeGunColors24[6]  = {0, 0, 0, 0, 0, 249};
+unsigned long ThemeGunColors34[6]  = {255, 255, 0, 0, 0, 182};
 
-unsigned long ThemeGunColors13[5]  = {0, 0, 0, 0, 0};
-unsigned long ThemeGunColors23[5]  = {0, 0, 0, 0, 0};
-unsigned long ThemeGunColors33[5]  = {255, 255, 0, 0, 0};
-
-unsigned long ThemeGunColors14[5]  = {255, 255, 0, 0, 0};
-unsigned long ThemeGunColors24[5]  = {0, 0, 0, 0, 0};
-unsigned long ThemeGunColors34[5]  = {255, 255, 0, 0, 0};
-
-unsigned long ThemeGunColors15[5]  = {0, 0, 0, 0, 0};
-unsigned long ThemeGunColors25[5]  = {255, 255, 0, 0, 0};
-unsigned long ThemeGunColors35[5]  = {0, 0, 0, 0, 0};
+unsigned long ThemeGunColors15[6]  = {0, 0, 0, 0, 0, 26};
+unsigned long ThemeGunColors25[6]  = {255, 255, 0, 0, 0, 249};
+unsigned long ThemeGunColors35[6]  = {0, 0, 0, 0, 0, 182};
 
 /*************** Firing Animations *********************/
 unsigned long prevFireMillis = 0;
@@ -1155,7 +1192,7 @@ void fireStrobe(unsigned long currentMillis) {
   if ((unsigned long)(currentMillis - prevFireMillis) >= fire_interval2) {
     prevFireMillis = currentMillis;
 
-    switch ( fireSeqNum ) {
+    switch ( fireSeqNum ) { //w.ruff - nothing to change here?
       case 0:
         wandLights.setPixelColor(10, wandLights.Color(ThemeGunColors1[THEME], ThemeGunColors2[THEME], ThemeGunColors3[THEME]));
         wandLights.setPixelColor(11, wandLights.Color(ThemeGunColors1[THEME], ThemeGunColors2[THEME], ThemeGunColors3[THEME]));
@@ -1200,7 +1237,6 @@ void fireStrobe(unsigned long currentMillis) {
         wandLights.setPixelColor(14, wandLights.Color(ThemeGunColors12[THEME], ThemeGunColors22[THEME], ThemeGunColors32[THEME]));
         wandLights.setPixelColor(15, 0);
         wandLights.setPixelColor(16, wandLights.Color(ThemeGunColors1[THEME], ThemeGunColors2[THEME], ThemeGunColors3[THEME]));
-
         break;
       case 5:
         wandLights.setPixelColor(10, wandLights.Color(ThemeGunColors14[THEME], ThemeGunColors24[THEME], ThemeGunColors34[THEME]));
