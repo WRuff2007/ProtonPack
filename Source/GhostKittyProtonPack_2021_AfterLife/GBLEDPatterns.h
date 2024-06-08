@@ -56,7 +56,7 @@ class NeoPatterns : public Adafruit_NeoPixel
     */
 
     const uint8_t CyclotronLEDs = 40;
-    const uint8_t PowerCellLEDs = 17; //w.ruff use all 16 leds updated from 16 to 17
+    const uint8_t PowerCellLEDs = 16;
 
     uint16_t IndexCLEDArray;
     const uint8_t   NUM_LEDS = 40;
@@ -155,24 +155,9 @@ class NeoPatterns : public Adafruit_NeoPixel
         if (IndexC >= TotalStepsC)
         {
           IndexC = 0;
-          IndexCLEDArray = 0;
-          if (themeMode == 4)
-          {
-            /*
-            if (Color1 == Wheel(255))
-            {
-              Color1 = Wheel(85);
-            }
-            else
-            {
-              Color1 = Wheel(255);
-            }
-            */
-            //Color1 = Wheel(200); //w.ruff - test, makes ring purple no changes
-          }
+          IndexCLEDArray = 0;          
           if (OnCompleteC != NULL)
           {
-
             OnCompleteC(); // call the completion callback
           }
         }
@@ -295,7 +280,7 @@ class NeoPatterns : public Adafruit_NeoPixel
     /*
        Initialize Normal Cyclotron Cycle
     */
-    void Cyclotron(uint32_t color1, uint32_t interval, uint8_t tmode)  //enum PackTheme { MOVIE, STATIS, SLIME, MESON, CHRISTMAS };
+    void Cyclotron(uint32_t color1, uint32_t interval, uint8_t tmode)  //enum PackTheme { MOVIE, AL, SLIME, MESON, STASIS, FE };
     {
       // ** reset the cyclotron index variables ** //
       themeMode = tmode;
@@ -305,11 +290,13 @@ class NeoPatterns : public Adafruit_NeoPixel
       {
         Interval = 5;
       }
+      else if (themeMode == 5){ //Speed up FE a little
+        Interval = 80;
+      }
       else
       {
         Interval = interval;
       }
-
 
       fadeStep = 0;
       cycNormalStart = false;           // has the routine started yet? ( used to clear LED's and start the cycle again )
@@ -321,27 +308,26 @@ class NeoPatterns : public Adafruit_NeoPixel
       switch (themeMode)
       {
         case 0:
-          Color1 = Wheel(255);
+          Color1 = Wheel(255); //Red
           break;
         case 1:
-          Color1 = Wheel(255);
+          Color1 = Wheel(255); //Red
           break;
         case 2:
-          Color1 = Wheel(85);
+          Color1 = Wheel(85); //Green
           for (uint8_t i = 0; i < CyclotronLEDCount; i++)
           {
             setPixelColor(i, Color1);
           }
           break;
         case 3:
-          Color1 = Wheel(42);
+          Color1 = Wheel(42); //Yellow
           break;
         case 4:
-          //Color1 = Wheel(85); //w.ruff - original Christmas color
-          Color1 = Wheel(170);
+          Color1 = Wheel(170); //Blue
           break;
         case 5:          
-          Color1 = Wheel(40); //w.ruff - should be yellow (sparks)
+          Color1 = Wheel(40); //Yellow (sparks)
           break;
       }
     }
@@ -381,11 +367,12 @@ class NeoPatterns : public Adafruit_NeoPixel
         if (i == IndexPC)  // Scan Pixel to the right
         {
           /*
-          if (themeMode == 4){            
+          //Phoenix
+          if (themeMode == 4){
             if(i == CyclotronLEDCount){              
               setPixelColor(i, Color(255, 0, 255)); //w.ruff - set first led as magenta
             }
-            else{ //w.ruff - fade magenta to neon yellow
+            else{ // fade magenta to neon yellow
               float multiplier = ((float)i - (float)CyclotronLEDCount) / 15;
               float r = 255 - ((255 - 0)*multiplier);
               float g = 0; //(105*multiplier);
@@ -423,11 +410,12 @@ class NeoPatterns : public Adafruit_NeoPixel
 
         if (i == IndexPC)  // Scan Pixel to the right
         {
+          //Phoenix
           /*if (themeMode == 4){            
             if(i == CyclotronLEDCount){              
               setPixelColor(i, Color(255, 0, 255)); //w.ruff - set first led as magenta
             }
-            else{ //w.ruff - fade magenta to neon yellow
+            else{ //fade magenta to neon yellow
               float multiplier = ((float)i - (float)CyclotronLEDCount) / 15;
               float r = 255 - ((255 - 0)*multiplier);
               float g = 0; //(105*multiplier);
@@ -474,11 +462,10 @@ class NeoPatterns : public Adafruit_NeoPixel
           fade(0, 129, 0, 126, 0, 0, 200, 0, CyclotronLEDCount - 1);
           break;
         case 4:
-          //fade(0, 0, 0, 255, 0, 0, 200, 0, CyclotronLEDCount - 1); //w.ruff - old value
           fade(0, 0, 0, 0, 0, 255, 200, 0, CyclotronLEDCount - 1);
           break;
         case 5:          
-          fade(0, 129, 0, 126, 0, 0, 200, 0, CyclotronLEDCount - 1); //w.ruff - yellow sparks color
+          fade(0, 129, 0, 126, 0, 0, 200, 0, CyclotronLEDCount - 1);
           break;
       }
       show();
@@ -566,6 +553,7 @@ class NeoPatterns : public Adafruit_NeoPixel
       {
         //w.ruff - all logic for overheat
         /*
+        //Phoenix vent
         if (themeMode == 4){            
           if(i == CyclotronLEDCount){              
             setPixelColor(i, Color(255, 0, 255)); //w.ruff - set first led as magenta
@@ -577,8 +565,8 @@ class NeoPatterns : public Adafruit_NeoPixel
             float b = 255 - ((255 - 255)*multiplier);              
             setPixelColor(i, Color((int)r, (int)g, (int)b));
           }
-        }
-        else{*/
+        }*/
+        //else{
           setPixelColor(i, Color2);
         //}
       }
