@@ -2,8 +2,6 @@
    Michael Simone - Arduino Source for 2020 Ghostbusters Proton Pack
    This is a modified Adafruit library to handle the routine operations for both the Cyclotron and Powercell.
    The following are the pattern types supported:
-
-
 */
 enum  pattern { NONE, POWERCELL, POWERCELL_BOOT, CYCLOTRON, CYCLOTRON_BOOT, POWERDOWNPACK, VENT };
 // Patern directions supported:
@@ -366,24 +364,7 @@ class NeoPatterns : public Adafruit_NeoPixel
       {
         if (i == IndexPC)  // Scan Pixel to the right
         {
-          /*
-          //Phoenix
-          if (themeMode == 4){
-            if(i == CyclotronLEDCount){              
-              setPixelColor(i, Color(255, 0, 255)); //w.ruff - set first led as magenta
-            }
-            else{ // fade magenta to neon yellow
-              float multiplier = ((float)i - (float)CyclotronLEDCount) / 15;
-              float r = 255 - ((255 - 0)*multiplier);
-              float g = 0; //(105*multiplier);
-              float b = 255 - ((255 - 255)*multiplier);              
-              setPixelColor(i, Color((int)r, (int)g, (int)b));
-              //rgb(0,0,255)
-            }
-          }
-          else{*/
-            setPixelColor(i, Color2);
-          //}
+          setPixelColor(i, Color2);
         }
         else
         {
@@ -410,23 +391,7 @@ class NeoPatterns : public Adafruit_NeoPixel
 
         if (i == IndexPC)  // Scan Pixel to the right
         {
-          //Phoenix
-          /*if (themeMode == 4){            
-            if(i == CyclotronLEDCount){              
-              setPixelColor(i, Color(255, 0, 255)); //w.ruff - set first led as magenta
-            }
-            else{ //fade magenta to neon yellow
-              float multiplier = ((float)i - (float)CyclotronLEDCount) / 15;
-              float r = 255 - ((255 - 0)*multiplier);
-              float g = 0; //(105*multiplier);
-              float b = 255 - ((255 - 255)*multiplier);              
-              setPixelColor(i, Color((int)r, (int)g, (int)b));
-              //rgb(0,0,255)
-            }
-          }
-          else{*/
-            setPixelColor(i, Color2);
-          //}
+          setPixelColor(i, Color2);
         }
         if (IndexPC == (CyclotronLEDCount + PowerCellLEDs - 1))
         {
@@ -499,7 +464,7 @@ class NeoPatterns : public Adafruit_NeoPixel
                 //Serial.println(IndexCLEDArray);
                 setPixelColor(IndexCLEDArray, DimColor(getPixelColor(IndexCLEDArray)));
                 setPixelColor(IndexCLEDArray, DimColor(getPixelColor(IndexCLEDArray)));
-                if (IndexCLEDArray == 0){//w.ruff - Fixing last led for slime animation
+                if (IndexCLEDArray == 0){// Fixing last led for slime animation
                   setPixelColor(CyclotronLEDs-1, Color1);
                 }
               }
@@ -526,7 +491,7 @@ class NeoPatterns : public Adafruit_NeoPixel
             }
             if (i < CyclotronLEDCount)
             {
-              if (themeMode != 2) //w.ruff - BEFORE: themeMode != 4 && themeMode != 2
+              if (themeMode != 2) // BEFORE: themeMode != 4 && themeMode != 2
               {
                 setPixelColor(i, DimColor(getPixelColor(i)));           
               }
@@ -551,24 +516,7 @@ class NeoPatterns : public Adafruit_NeoPixel
       }
       for (uint8_t i = CyclotronLEDCount; i < CyclotronLEDCount + PowerCellLEDs; i++)
       {
-        //w.ruff - all logic for overheat
-        /*
-        //Phoenix vent
-        if (themeMode == 4){            
-          if(i == CyclotronLEDCount){              
-            setPixelColor(i, Color(255, 0, 255)); //w.ruff - set first led as magenta
-          }
-          else{ //w.ruff - fade magenta to neon yellow
-            float multiplier = ((float)i - (float)CyclotronLEDCount) / 15;
-            float r = 255 - ((255 - 0)*multiplier);
-            float g = 0; //(105*multiplier);
-            float b = 255 - ((255 - 255)*multiplier);              
-            setPixelColor(i, Color((int)r, (int)g, (int)b));
-          }
-        }*/
-        //else{
-          setPixelColor(i, Color2);
-        //}
+        setPixelColor(i, Color2);
       }
       show();
     }
