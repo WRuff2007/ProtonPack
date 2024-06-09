@@ -13,11 +13,12 @@
   2024 - Wes Ruff Changes
     - Initial boot set to Afterlife.
     - Replace Christmas mode with Stasis.  Rename variables for sanity.
-    - Fix led index 0 for slime rind animation
+    - Fix led index 0 for slime ring animation
     - Add Frozen empire mode
       - LEDs and sounds including boot
     - Turn vent relay to off at boot
-    - Turn on relay when fast warning starts instead of vent start.  Intention is to start smoke and use a ~5s timed delay module to start the vent fan.
+    - Changed Fire 2 led from white to orange
+    - Turn on relay when fast warning starts instead of vent start.  Intention is to start smoke and use a ~5s timed delay module to start the vent fan after smoke chamber is filled.
       - https://www.amazon.com/HiLetgo-Switch-Adjustable-Module-Second/dp/B01DK8NJNI    
 
 ******************************************************************************************/
@@ -49,7 +50,6 @@ unsigned long  FEStartupTrack = 39;
 unsigned long  ThemeSWTrack = 3;
 unsigned long  SlimeSWTrack = 32;
 unsigned long  MesonSWTrack = 31;
-//unsigned long  ChristmasSWTrack = 26;
 unsigned long  StasisSWTrack = 26;
 
 unsigned long  FireMovie = 11;
@@ -57,14 +57,12 @@ unsigned long  FireCrossStreams = 12;
 unsigned long  FireStasis = 13;
 unsigned long  FireSlime = 14;
 unsigned long  FireMeson = 15;
-//unsigned long  FireChristmas = 21;
 unsigned long  FireAfterlife = 34;
 
 unsigned long  MovieTail = 4;
 unsigned long  StasisTail = 22;
 unsigned long  SlimeTail = 23;
 unsigned long  MesonTail = 24;
-//unsigned long  ChristmasTail = 25;
 unsigned long  FETail = 38;
 
 unsigned long  shutdownTrack = 10;
@@ -121,7 +119,7 @@ const int GunLEDEnd = 16;
 // *** Note these constants may change if you are using different LED counts, E.g. 1 LED vs a 7 LED Neopixel Jewel *** //
 
 // Cyclotron + PowerCell LED Count
-const int NeoPixelLEDCount1 = 55; //w.ruff: Use all 16 leds (56 instead of 55)----NO 55 b/c of space
+const int NeoPixelLEDCount1 = 55;
 
 // Vent + Wand LED Count
 const int NeoPixelLEDCount2 = 17;
@@ -144,7 +142,7 @@ enum WandState WANDSTATUS;
 enum WandSLEDState { ALLOFF, WANDONLY, NORMAL, FIRING, WARNING, FASTWARNING, VENTSTATE, STREAMCROSS };
 enum WandSLEDState WANDLEDSTATUS;
 
-enum PackTheme { MOVIE, AL, SLIME, MESON, STASIS, FE }; //Add FE mode, CHRISTMAS --> STASIS, STATIS --> AL
+enum PackTheme { MOVIE, AL, SLIME, MESON, STASIS, FE }; //Add FE, CHRISTMAS --> STASIS, STATIS --> AL
 enum PackTheme THEME;
 
 // ******************* inputs for switches and buttons ******************* //
@@ -232,8 +230,7 @@ void setup() {
   pinMode(FIRE_BUTTON2, INPUT);
   digitalWrite(FIRE_BUTTON2, HIGH);
   pinMode(VENTING, OUTPUT);
-  //digitalWrite(VENTING, HIGH);
-  digitalWrite (VENTING, LOW);;//w.ruff - turn relay off at startup
+  digitalWrite (VENTING, LOW);;//turn vent relay off at startup
   pinMode(RUMBLE, OUTPUT);
   digitalWrite(RUMBLE, LOW);
 
@@ -251,7 +248,7 @@ void setup() {
 
   // ***** Set the intial pack status to off ***** //
   STATUS = OFF;
-  THEME = AL; //w.ruff - Start in Afterlife theme
+  THEME = AL; // Start in Afterlife theme
   // ***** Start with LED's off ***** //
   clearLEDs();
   delay(500);
@@ -376,7 +373,7 @@ void loop()
     // ***** If Booting from a start start the booting routine ***** //
     if (PowerOff == true && startpack == true ) // If fresh poweron
     {
-      if (THEME == FE){ //w.ruff - Add logic for FE boot...could do others later..
+      if (THEME == FE){ //FE boot...could do others later..
         myDFPlayer.play(FEStartupTrack);
       }
       else{
@@ -387,10 +384,10 @@ void loop()
       STATUS = BOOTING;
       setVentLightState(ventStart, ventEnd, 2);
       if (THEME == AL){
-        PackLEDs.setBrightness(10);//w.ruff - Adjust brightness for Afterlife boot
+        PackLEDs.setBrightness(10);// Adjust brightness for Afterlife boot
       }      
       PackLEDs.CyclotronBoot(PackLEDs.Wheel(255), 50, THEME);
-      PackLEDs.PowercellBoot(PackLEDs.Wheel(170), 50); //w.ruff Update interval from 30 -> 50.  A bit slower for longer AL boot track.
+      PackLEDs.PowercellBoot(PackLEDs.Wheel(170), 50); // Update interval from 30 -> 50.  A bit slower for the longer AL boot track
     }
     switch (STATUS)
     {
@@ -442,7 +439,7 @@ void loop()
             myDFPlayer.loop(IdleStasisLoop);
             break;
             case FE:
-            myDFPlayer.loop(IdleFELoop);//FE Idle track from Die Geisterjäger - SHARE for Unity FB group
+            myDFPlayer.loop(IdleFELoop);
             break;
           }
           
@@ -509,7 +506,7 @@ void loop()
             }
             WANDLEDSTATUS = FASTWARNING;
             shouldVent = true;
-            digitalWrite (VENTING, HIGH); //w.ruff: turn relay on during fast warning
+            digitalWrite (VENTING, HIGH); // vent during fast warning
           }
           // After 5 seconds start the alarm routing on the wand
           else if ((millis() - firingStateMillis) >= firingwarning)
@@ -619,7 +616,7 @@ void loop()
       }
 
     }
-    else // ***** If turing wand on from off State play CLICK ***** //
+    else // ***** If turning wand on from off State play CLICK ***** //
     {
       if (WANDLEDSTATUS != WANDONLY)
       {
