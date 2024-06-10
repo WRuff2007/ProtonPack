@@ -345,12 +345,13 @@ void loop()
       fireButtonState = true;
       if (musicmodestart == false)
       {
-        myDFPlayer.playFolder(1, 1);
+        //myDFPlayer.playFolder(1, 1); //Play first track only
+        myDFPlayer.repeatFolder(1); //Play all tracks in the folder
         musicmodestart = true;
       }
       else
       {
-        myDFPlayer.playNext();
+        myDFPlayer.playNext(); //fire1 to move to next track
       }
     }
     else
