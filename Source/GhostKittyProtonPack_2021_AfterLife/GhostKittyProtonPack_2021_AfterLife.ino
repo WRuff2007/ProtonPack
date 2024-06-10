@@ -17,10 +17,10 @@
     - Add Frozen empire mode
       - LEDs and sounds including boot
     - Turn vent relay to off at boot
-    - Changed Fire 2 led from white to orange
+    - Change Fire 2 led from white to orange
     - Turn on relay when fast warning starts instead of vent start.  Intention is to start smoke and use a ~5s timed delay module to start the vent fan after smoke chamber is filled.
       - https://www.amazon.com/HiLetgo-Switch-Adjustable-Module-Second/dp/B01DK8NJNI    
-
+    - Music mode now plays all tracks in the folder
 ******************************************************************************************/
 
 /*********************************************************
